@@ -9,8 +9,8 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Настройки Telegram бота
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8276593755:AAErp_L3c6glsiJmovdc8i1aON5aasIfMI0';
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '616956857';
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 // Включаем CORS для всех запросов
 app.use(cors());
