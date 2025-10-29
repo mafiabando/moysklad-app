@@ -3,7 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой Склад App</title>
+    <title>Мой Склад App - Веб версия</title>
+    
+    <!-- PWA мета-теги -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="МойСклад">
+    <meta name="description" content="Приложение для работы с API МойСклад - управление товарами, продажами и приёмками">
+    
+    <!-- Иконки для разных устройств -->
+    <link rel="icon" type="image/svg+xml" href="/icon.svg">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <meta name="msapplication-TileImage" content="/icon-192.png">
+    <meta name="msapplication-TileColor" content="#667eea">
     <style>
         * {
             margin: 0;
@@ -18,7 +32,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -66,7 +80,7 @@
             font-size: 14px;
         }
         
-        .settings-section {
+        .section {
             background: white;
             padding: 25px;
             border-radius: 10px;
@@ -84,7 +98,7 @@
             font-weight: 500;
         }
         
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
@@ -101,10 +115,19 @@
             cursor: pointer;
             font-size: 16px;
             transition: background 0.2s;
+            margin-right: 10px;
         }
         
         .btn:hover {
             background: #5a6fd8;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
         }
         
         .hidden {
@@ -128,21 +151,99 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        
+        .cards-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .col {
+            flex: 1;
+            position: relative;
+        }
+        
+        .position-row {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .purchase-price-hint {
+            color: #666;
+            font-size: 12px;
+            display: block;
+            margin-top: 2px;
+        }
+        
+        .product-suggestions {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: calc(100% - 2px);
+        }
+        
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .suggestion-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="header">
-            <h1>📦 Мой Склад App</h1>
-            <p>Мобильное приложение для работы с API МойСклад</p>
-            <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; font-size: 14px;">
-                <strong>💡 Как использовать:</strong><br>
-                1. Настройте API в веб-версии<br>
-                2. Используйте <code>npx expo start</code> для запуска мобильной версии<br>
-                3. Отсканируйте QR-код в Expo Go для полной функциональности
-            </div>
+            <h1>📦 Мой Склад App - Веб версия</h1>
+            <p>Полнофункциональное веб-приложение для работы с API МойСклад</p>
         </header>
 
+        <!-- Главное меню -->
         <div id="mainMenu">
             <div class="menu">
                 <button class="menu-item" onclick="showSection('products')">
@@ -174,14 +275,11 @@
 
         <!-- Настройки -->
         <div id="settingsSection" class="hidden">
-            <div class="settings-section">
+            <div class="section">
+                <button class="btn btn-secondary" onclick="showSection('main')" style="margin-bottom: 20px;">⬅️ Назад к меню</button>
+                
                 <h2>⚙️ Настройки API</h2>
                 <form id="settingsForm">
-                    <div class="form-group">
-                        <label for="apiUrl">URL API:</label>
-                        <input type="url" id="apiUrl" value="https://api.moysklad.ru/api/remap/1.2" required>
-                    </div>
-                    
                     <div class="form-group">
                         <label for="username">Логин:</label>
                         <input type="text" id="username" required>
@@ -198,78 +296,205 @@
                 
                 <div id="connectionStatus"></div>
             </div>
-            
-            <button class="btn" onclick="showSection('main')">⬅️ Назад к меню</button>
         </div>
 
-        <!-- Другие секции будут добавлены здесь -->
+        <!-- Товары -->
         <div id="productsSection" class="hidden">
-            <div class="settings-section">
-                <h2>📋 Товары</h2>
-                <p><strong>В мобильном приложении доступно:</strong></p>
-                <ul style="margin: 15px 0; padding-left: 20px;">
-                    <li>Просмотр списка товаров из МойСклад</li>
-                    <li>Поиск и фильтрация товаров</li>
-                    <li>Просмотр остатков и цен</li>
-                    <li>Добавление новых товаров</li>
-                </ul>
-                <p><strong>🚀 Для доступа:</strong> Используйте Expo Go на мобильном устройстве</p>
+            <div class="section">
+                <button class="btn btn-secondary" onclick="showSection('main')" style="margin-bottom: 20px;">⬅️ Назад к меню</button>
+                
+                <div class="row">
+                    <div class="col">
+                        <h2>📋 Товары</h2>
+                    </div>
+                    <div class="col" style="flex: none;">
+                        <button class="btn" onclick="loadProducts()">🔄 Обновить</button>
+                    </div>
+                </div>
+                
+                <input type="text" class="search-box" id="productSearch" placeholder="Поиск товаров..." onkeyup="filterProducts()">
+                
+                <div id="productsContent" class="loading">
+                    Нажмите "Обновить" для загрузки товаров
+                </div>
             </div>
-            <button class="btn" onclick="showSection('main')">⬅️ Назад к меню</button>
         </div>
 
-        <div id="salesSection" class="hidden">
-            <div class="settings-section">
-                <h2>💰 Отгрузки (Продажи)</h2>
-                <p><strong>В мобильном приложении доступно:</strong></p>
-                <ul style="margin: 15px 0; padding-left: 20px;">
-                    <li>Создание новых отгрузок</li>
-                    <li>Выбор контрагента</li>
-                    <li>Добавление товаров в отгрузку</li>
-                    <li>Установка пользовательских цен</li>
-                    <li>Сохранение в МойСклад</li>
-                </ul>
-                <p><strong>🚀 Для доступа:</strong> Используйте Expo Go на мобильном устройстве</p>
-            </div>
-            <button class="btn" onclick="showSection('main')">⬅️ Назад к меню</button>
-        </div>
-
-        <div id="purchasesSection" class="hidden">
-            <div class="settings-section">
-                <h2>📦 Приёмки товара</h2>
-                <p><strong>В мобильном приложении доступно:</strong></p>
-                <ul style="margin: 15px 0; padding-left: 20px;">
-                    <li>Создание новых приёмок</li>
-                    <li>Выбор поставщика</li>
-                    <li>Добавление товаров в приёмку</li>
-                    <li>Установка закупочных цен</li>
-                    <li>Сохранение в МойСклад</li>
-                </ul>
-                <p><strong>🚀 Для доступа:</strong> Используйте Expo Go на мобильном устройстве</p>
-            </div>
-            <button class="btn" onclick="showSection('main')">⬅️ Назад к меню</button>
-        </div>
-
+        <!-- Контрагенты -->
         <div id="counterpartiesSection" class="hidden">
-            <div class="settings-section">
-                <h2>👥 Контрагенты</h2>
-                <p><strong>В мобильном приложении доступно:</strong></p>
-                <ul style="margin: 15px 0; padding-left: 20px;">
-                    <li>Просмотр списка контрагентов</li>
-                    <li>Поиск клиентов и поставщиков</li>
-                    <li>Добавление новых контрагентов</li>
-                    <li>Редактирование контактной информации</li>
-                </ul>
-                <p><strong>🚀 Для доступа:</strong> Используйте Expo Go на мобильном устройстве</p>
+            <div class="section">
+                <button class="btn btn-secondary" onclick="showSection('main')" style="margin-bottom: 20px;">⬅️ Назад к меню</button>
+                
+                <div class="row">
+                    <div class="col">
+                        <h2>👥 Контрагенты</h2>
+                    </div>
+                    <div class="col" style="flex: none;">
+                        <button class="btn" onclick="loadCounterparties()">🔄 Обновить</button>
+                    </div>
+                </div>
+                
+                <input type="text" class="search-box" id="counterpartySearch" placeholder="Поиск контрагентов..." onkeyup="filterCounterparties()">
+                
+                <div id="counterpartiesContent" class="loading">
+                    Нажмите "Обновить" для загрузки контрагентов
+                </div>
             </div>
-            <button class="btn" onclick="showSection('main')">⬅️ Назад к меню</button>
+        </div>
+
+        <!-- Отгрузки -->
+        <div id="salesSection" class="hidden">
+            <div class="section">
+                <button class="btn btn-secondary" onclick="showSection('main')" style="margin-bottom: 20px;">⬅️ Назад к меню</button>
+                
+                <h2>💰 Отгрузки (Продажи)</h2>
+                <p>Создание новой отгрузки:</p>
+                
+                <form id="saleForm">
+                    <div class="form-group">
+                        <label for="saleOrganization">Организация:</label>
+                        <select id="saleOrganization" required>
+                            <option value="">Выберите организацию</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="saleStore">Склад:</label>
+                        <select id="saleStore" required>
+                            <option value="">Выберите склад</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="saleCounterparty">Контрагент:</label>
+                        <select id="saleCounterparty" required>
+                            <option value="">Выберите контрагента</option>
+                        </select>
+                    </div>
+                    
+                    <h3>Товары:</h3>
+                    <div id="salePositions">
+                        <div class="position-row">
+                            <div class="row">
+                                <div class="col">
+                                    <label>Товар:</label>
+                                    <input type="text" class="position-product-search" placeholder="Начните вводить название товара..." required>
+                                    <input type="hidden" class="position-product" required>
+                                    <div class="product-suggestions" style="display: none;"></div>
+                                </div>
+                                <div class="col">
+                                    <label>Количество:</label>
+                                    <input type="number" class="position-quantity" min="1" value="1" required>
+                                </div>
+                                <div class="col">
+                                    <label>Цена продажи (руб):</label>
+                                    <input type="number" class="position-price" min="0" step="0.01" required>
+                                    <small class="purchase-price-hint"></small>
+                                </div>
+                                <div class="col" style="flex: none;">
+                                    <label>&nbsp;</label>
+                                    <button type="button" class="btn btn-secondary" onclick="removePosition(this)">❌</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary" onclick="addPosition()">➕ Добавить товар</button>
+                    
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>
+                            <input type="checkbox" id="notifyTelegram" onchange="toggleTelegramComment()"> 
+                            📢 Оповестить в Telegram
+                        </label>
+                    </div>
+                    
+                    <div class="form-group" id="telegramCommentGroup" style="display: none;">
+                        <label for="telegramComment">Комментарий к отгрузке:</label>
+                        <textarea id="telegramComment" rows="3" placeholder="Дополнительная информация об отгрузке..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; resize: vertical;"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn">💰 Создать отгрузку</button>
+                </form>
+                
+                <div id="saleStatus"></div>
+            </div>
+        </div>
+
+        <!-- Приёмки -->
+        <div id="purchasesSection" class="hidden">
+            <div class="section">
+                <button class="btn btn-secondary" onclick="showSection('main')" style="margin-bottom: 20px;">⬅️ Назад к меню</button>
+                
+                <h2>📦 Приёмки товара</h2>
+                <p>Создание новой приёмки:</p>
+                
+                <form id="purchaseForm">
+                    <div class="form-group">
+                        <label for="purchaseOrganization">Организация:</label>
+                        <select id="purchaseOrganization" required>
+                            <option value="">Выберите организацию</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="purchaseStore">Склад:</label>
+                        <select id="purchaseStore" required>
+                            <option value="">Выберите склад</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="purchaseCounterparty">Поставщик:</label>
+                        <select id="purchaseCounterparty" required>
+                            <option value="">Выберите поставщика</option>
+                        </select>
+                    </div>
+                    
+                    <h3>Товары:</h3>
+                    <div id="purchasePositions">
+                        <div class="position-row">
+                            <div class="row">
+                                <div class="col">
+                                    <label>Товар:</label>
+                                    <input type="text" class="position-product-search" placeholder="Начните вводить название товара..." required>
+                                    <input type="hidden" class="position-product" required>
+                                    <div class="product-suggestions" style="display: none;"></div>
+                                </div>
+                                <div class="col">
+                                    <label>Количество:</label>
+                                    <input type="number" class="position-quantity" min="1" value="1" required>
+                                </div>
+                                <div class="col">
+                                    <label>Цена закупки (руб):</label>
+                                    <input type="number" class="position-price" min="0" step="0.01" required>
+                                    <small class="sale-price-hint"></small>
+                                </div>
+                                <div class="col" style="flex: none;">
+                                    <label>&nbsp;</label>
+                                    <button type="button" class="btn btn-secondary" onclick="removePurchasePosition(this)">❌</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary" onclick="addPurchasePosition()">➕ Добавить товар</button>
+                    <button type="submit" class="btn">📦 Создать приёмку</button>
+                </form>
+                
+                <div id="purchaseStatus"></div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Простая навигация между секциями
+        let currentProducts = [];
+        let currentCounterparties = [];
+        let currentOrganizations = [];
+        let currentStores = [];
+        let settings = {};
+
+        // Навигация между секциями
         function showSection(section) {
-            // Скрыть все секции
             document.getElementById('mainMenu').classList.add('hidden');
             document.getElementById('settingsSection').classList.add('hidden');
             document.getElementById('productsSection').classList.add('hidden');
@@ -277,20 +502,86 @@
             document.getElementById('purchasesSection').classList.add('hidden');
             document.getElementById('counterpartiesSection').classList.add('hidden');
             
-            // Показать нужную секцию
             if (section === 'main') {
                 document.getElementById('mainMenu').classList.remove('hidden');
             } else {
                 document.getElementById(section + 'Section').classList.remove('hidden');
+                
+                // Загружаем данные при входе в секции
+                if (section === 'sales' || section === 'purchases') {
+                    loadSelectData();
+                }
             }
+        }
+
+        // API функции
+        async function apiRequest(endpoint, options = {}) {
+            if (!settings.username || !settings.password) {
+                throw new Error('Настройки API не заданы. Перейдите в раздел "Настройки"');
+            }
+
+            const credentials = btoa(settings.username + ':' + settings.password);
+            
+            const response = await fetch('/api' + endpoint, {
+                headers: {
+                    'Authorization': 'Basic ' + credentials,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                ...options
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+            }
+
+            return response.json();
+        }
+
+        // Функция для загрузки всех элементов с пагинацией
+        async function loadAllItems(endpoint, includeStock = false) {
+            let allItems = [];
+            let offset = 0;
+            const limit = 1000; // Максимальный лимит API
+            
+            while (true) {
+                try {
+                    let url = `${endpoint}?limit=${limit}&offset=${offset}`;
+                    
+                    const data = await apiRequest(url);
+                    const items = data.rows || [];
+                    
+                    if (items.length === 0) {
+                        break; // Больше нет данных
+                    }
+                    
+                    allItems = allItems.concat(items);
+                    offset += limit;
+                    
+                    // Если получили меньше лимита, значит это последняя страница
+                    if (items.length < limit) {
+                        break;
+                    }
+                    
+                    // Добавляем небольшую задержку между запросами
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                } catch (error) {
+                    console.error(`Ошибка загрузки данных с offset ${offset}:`, error);
+                    break;
+                }
+            }
+            
+            console.log(`Загружено ${allItems.length} элементов из ${endpoint}`);
+            return allItems;
         }
 
         // Сохранение настроек
         document.getElementById('settingsForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const settings = {
-                apiUrl: document.getElementById('apiUrl').value,
+            settings = {
                 username: document.getElementById('username').value,
                 password: document.getElementById('password').value
             };
@@ -303,45 +594,771 @@
 
         // Проверка соединения
         async function testConnection() {
-            const settings = {
-                apiUrl: document.getElementById('apiUrl').value,
-                username: document.getElementById('username').value,
-                password: document.getElementById('password').value
-            };
-            
             const status = document.getElementById('connectionStatus');
-            status.innerHTML = '<div class="status">Проверка настроек...</div>';
+            status.innerHTML = '<div class="status">Проверка соединения...</div>';
             
-            // Валидация настроек
-            if (!settings.username || !settings.password) {
-                status.innerHTML = '<div class="status error">❌ Заполните логин и пароль</div>';
-                return;
+            try {
+                const tempSettings = {
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value
+                };
+                
+                if (!tempSettings.username || !tempSettings.password) {
+                    throw new Error('Заполните логин и пароль');
+                }
+
+                const credentials = btoa(tempSettings.username + ':' + tempSettings.password);
+                const response = await fetch('/api/entity/organization', {
+                    headers: {
+                        'Authorization': 'Basic ' + credentials,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const orgName = data.rows && data.rows[0] ? data.rows[0].name : 'Неизвестно';
+                    status.innerHTML = `<div class="status success">✅ Соединение успешно установлено!<br>Организация: ${orgName}</div>`;
+                } else {
+                    const errorText = await response.text();
+                    status.innerHTML = `<div class="status error">❌ Ошибка: ${response.status}<br>${errorText}</div>`;
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="status error">❌ Ошибка: ${error.message}</div>`;
+            }
+        }
+
+        // Загрузка товаров
+        async function loadProducts() {
+            const content = document.getElementById('productsContent');
+            content.innerHTML = '<div class="loading">Загрузка всех товаров...</div>';
+            
+            try {
+                // Загружаем товары
+                currentProducts = await loadAllItems('/entity/product', false);
+                
+                if (currentProducts.length === 0) {
+                    content.innerHTML = '<p>Товары не найдены</p>';
+                    return;
+                }
+                
+                // Получаем остатки отдельно, включая нулевые
+                content.innerHTML = '<div class="loading">Загрузка остатков товаров (включая нулевые)...</div>';
+                
+                // Пытаемся получить ВСЕ остатки с параметрами
+                const stockData = await loadAllItems('/report/stock/all?includeZeroStocks=true', false);
+                
+                console.log('Данные остатков (все):', stockData.slice(0, 3)); // Отладка
+                
+                // Создаем карту остатков по href товаров
+                const stockMap = {};
+                stockData.forEach(item => {
+                    let productHref = item.meta?.href;
+                    if (productHref) {
+                        // Очищаем href от параметров expand, если они есть
+                        productHref = productHref.split('?')[0];
+                        
+                        // Используем поле stock из объекта item
+                        const stockQuantity = item.stock || item.quantity || 0;
+                        stockMap[productHref] = stockQuantity;
+                    }
+                });
+                
+                console.log('Карта остатков:', Object.keys(stockMap).length, 'товаров'); // Отладка
+                
+                // Добавляем остатки к товарам
+                currentProducts.forEach(product => {
+                    // Очищаем href товара от параметров
+                    const cleanProductHref = product.meta.href.split('?')[0];
+                    product.currentStock = stockMap[cleanProductHref] || 0;
+                });
+                
+                console.log('Первые 3 товара с API:', currentProducts.slice(0, 3).map(p => ({
+                    name: p.name,
+                    href: p.meta.href.split('?')[0],
+                    currentStock: p.currentStock
+                })));
+                
+                displayProducts(currentProducts);
+            } catch (error) {
+                content.innerHTML = `<div class="status error">Ошибка загрузки: ${error.message}</div>`;
+            }
+        }
+
+        function displayProducts(products) {
+            const content = document.getElementById('productsContent');
+            
+            // Логируем первые несколько товаров для отладки
+            if (products.length > 0) {
+                console.log('Первые 3 товара для отображения:', products.slice(0, 3).map(p => ({
+                    name: p.name,
+                    href: p.meta.href,
+                    currentStock: p.currentStock,
+                    stock: p.stock,
+                    quantity: p.quantity,
+                    reserve: p.reserve
+                })));
             }
             
-            if (!settings.apiUrl.includes('api.moysklad.ru')) {
-                status.innerHTML = '<div class="status error">❌ Некорректный URL API МойСклад</div>';
-                return;
-            }
+            content.innerHTML = `
+                <div class="cards-grid">
+                    ${products.map(product => {
+                        // Используем currentStock в первую очередь
+                        let stock = product.currentStock || 0;
+                        
+                        const stockColor = stock > 0 ? '#28a745' : '#dc3545';
+                        const stockText = stock > 0 ? `${stock} шт` : 'Нет в наличии';
+                        
+                        return `
+                        <div class="card">
+                            <h4>${product.name}</h4>
+                            <p><strong>Код:</strong> ${product.code || 'Не указан'}</p>
+                            <p><strong>Артикул:</strong> ${product.article || 'Не указан'}</p>
+                            <p><strong>Единица:</strong> ${product.uom ? product.uom.name : 'шт'}</p>
+                            <p><strong>Остаток:</strong> <span style="color: ${stockColor}; font-weight: bold;">${stockText}</span></p>
+                            <p><strong>Описание:</strong> ${product.description || 'Нет описания'}</p>
+                            <p><small><strong>Debug:</strong> currentStock=${product.currentStock}</small></p>
+                        </div>
+                    `}).join('')}
+                </div>
+            `;
+        }
+
+        function filterProducts() {
+            const search = document.getElementById('productSearch').value.toLowerCase();
+            const filtered = currentProducts.filter(product => 
+                product.name.toLowerCase().includes(search) ||
+                (product.code && product.code.toLowerCase().includes(search)) ||
+                (product.article && product.article.toLowerCase().includes(search))
+            );
+            displayProducts(filtered);
+        }
+
+        // Загрузка контрагентов
+        async function loadCounterparties() {
+            const content = document.getElementById('counterpartiesContent');
+            content.innerHTML = '<div class="loading">Загрузка всех контрагентов...</div>';
             
-            // Для веб-версии мы не можем напрямую тестировать API из-за CORS
-            status.innerHTML = `
-                <div class="status success">
-                    ✅ Настройки сохранены!<br>
-                    <strong>Примечание:</strong> Прямое тестирование API из браузера невозможно из-за политики CORS.<br>
-                    Для полного тестирования используйте мобильное приложение через Expo Go.
+            try {
+                currentCounterparties = await loadAllItems('/entity/counterparty');
+                
+                if (currentCounterparties.length === 0) {
+                    content.innerHTML = '<p>Контрагенты не найдены</p>';
+                    return;
+                }
+                
+                displayCounterparties(currentCounterparties);
+            } catch (error) {
+                content.innerHTML = `<div class="status error">Ошибка загрузки: ${error.message}</div>`;
+            }
+        }
+
+        function displayCounterparties(counterparties) {
+            const content = document.getElementById('counterpartiesContent');
+            content.innerHTML = `
+                <div class="cards-grid">
+                    ${counterparties.map(cp => `
+                        <div class="card">
+                            <h4>${cp.name}</h4>
+                            <p><strong>Тип:</strong> ${cp.companyType === 'legal' ? 'Юридическое лицо' : cp.companyType === 'individual' ? 'Физическое лицо' : 'ИП'}</p>
+                            <p><strong>Email:</strong> ${cp.email || 'Не указан'}</p>
+                            <p><strong>Телефон:</strong> ${cp.phone || 'Не указан'}</p>
+                            <p><strong>ИНН:</strong> ${cp.inn || 'Не указан'}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function filterCounterparties() {
+            const search = document.getElementById('counterpartySearch').value.toLowerCase();
+            const filtered = currentCounterparties.filter(cp => 
+                cp.name.toLowerCase().includes(search) ||
+                (cp.inn && cp.inn.includes(search)) ||
+                (cp.email && cp.email.toLowerCase().includes(search))
+            );
+            displayCounterparties(filtered);
+        }
+
+        // Загрузка данных для селектов
+        async function loadSelectData() {
+            try {
+                // Загружаем ВСЕ товары для селектов
+                if (currentProducts.length === 0) {
+                    currentProducts = await loadAllItems('/entity/product', false);
+                    
+                    // Получаем остатки отдельно, включая нулевые
+                    try {
+                        const stockData = await loadAllItems('/report/stock/all?includeZeroStocks=true', false);
+                        
+                        console.log('Данные остатков для селектов:', stockData.slice(0, 3)); // Отладка
+                        
+                        // Создаем карту остатков по href товаров
+                        const stockMap = {};
+                        stockData.forEach(item => {
+                            let productHref = item.meta?.href;
+                            if (productHref) {
+                                // Очищаем href от параметров expand, если они есть
+                                productHref = productHref.split('?')[0];
+                                
+                                // Используем поле stock из объекта item
+                                const stockQuantity = item.stock || item.quantity || 0;
+                                stockMap[productHref] = stockQuantity;
+                            }
+                        });
+                        
+                        // Добавляем остатки к товарам
+                        currentProducts.forEach(product => {
+                            // Очищаем href товара от параметров
+                            const cleanProductHref = product.meta.href.split('?')[0];
+                            product.currentStock = stockMap[cleanProductHref] || 0;
+                        });
+                        
+                        console.log('Товары для селектов с остатками:', currentProducts.slice(0, 3).map(p => ({
+                            name: p.name,
+                            currentStock: p.currentStock
+                        })));
+                        
+                    } catch (stockError) {
+                        console.error('Ошибка загрузки остатков:', stockError);
+                        // Если не удалось загрузить остатки, устанавливаем 0
+                        currentProducts.forEach(product => {
+                            product.currentStock = 0;
+                        });
+                    }
+                }
+                
+                // Загружаем контрагентов для селектов
+                if (currentCounterparties.length === 0) {
+                    const counterpartiesData = await apiRequest('/entity/counterparty?limit=1000');
+                    currentCounterparties = counterpartiesData.rows || [];
+                }
+                
+                // Загружаем организации
+                if (currentOrganizations.length === 0) {
+                    const organizationsData = await apiRequest('/entity/organization?limit=1000');
+                    currentOrganizations = organizationsData.rows || [];
+                }
+                
+                // Загружаем склады
+                if (currentStores.length === 0) {
+                    const storesData = await apiRequest('/entity/store?limit=1000');
+                    currentStores = storesData.rows || [];
+                }
+                
+                // Заполняем селекты
+                fillSelects();
+                
+            } catch (error) {
+                console.error('Ошибка загрузки данных для селектов:', error);
+            }
+        }
+
+        function fillSelects() {
+            // Инициализируем поиск товаров для всех позиций отгрузок
+            document.querySelectorAll('#salePositions .position-product-search').forEach(input => {
+                setupProductSearch(input, 'sale');
+            });
+            
+            // Инициализируем поиск товаров для всех позиций приёмок
+            document.querySelectorAll('#purchasePositions .position-product-search').forEach(input => {
+                setupProductSearch(input, 'purchase');
+            });
+
+            // Контрагенты с выбором "Разовый" по умолчанию
+            const counterpartySelects = ['saleCounterparty', 'purchaseCounterparty'];
+            counterpartySelects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    const razovyOption = currentCounterparties.find(cp => cp.name === 'Разовый');
+                    let options = '<option value="">Выберите контрагента</option>' +
+                        currentCounterparties.map(cp => 
+                            `<option value="${cp.meta.href}">${cp.name}</option>`
+                        ).join('');
+                    
+                    select.innerHTML = options;
+                    
+                    // Устанавливаем "Разовый" по умолчанию если найден
+                    if (razovyOption) {
+                        select.value = razovyOption.meta.href;
+                    }
+                }
+            });
+            
+            // Организации с выбором "Строй-дом" по умолчанию
+            const orgSelects = ['saleOrganization', 'purchaseOrganization'];
+            orgSelects.forEach(selectId => {
+                const orgSelect = document.getElementById(selectId);
+                if (orgSelect) {
+                    const stroydomOption = currentOrganizations.find(org => org.name === 'Строй-дом');
+                    let orgOptions = '<option value="">Выберите организацию</option>' +
+                        currentOrganizations.map(org => 
+                            `<option value="${org.meta.href}">${org.name}</option>`
+                        ).join('');
+                    
+                    orgSelect.innerHTML = orgOptions;
+                    
+                    // Устанавливаем "Строй-дом" по умолчанию если найден
+                    if (stroydomOption) {
+                        orgSelect.value = stroydomOption.meta.href;
+                    }
+                }
+            });
+            
+            // Склады с выбором "Основной склад" по умолчанию
+            const storeSelects = ['saleStore', 'purchaseStore'];
+            storeSelects.forEach(selectId => {
+                const storeSelect = document.getElementById(selectId);
+                if (storeSelect) {
+                    const mainStoreOption = currentStores.find(store => store.name === 'Основной склад');
+                    let storeOptions = '<option value="">Выберите склад</option>' +
+                        currentStores.map(store => 
+                            `<option value="${store.meta.href}">${store.name}</option>`
+                        ).join('');
+                    
+                    storeSelect.innerHTML = storeOptions;
+                    
+                    // Устанавливаем "Основной склад" по умолчанию если найден
+                    if (mainStoreOption) {
+                        storeSelect.value = mainStoreOption.meta.href;
+                    }
+                }
+            });
+        }
+
+        // Настройка поиска товаров
+        function setupProductSearch(input, formType = 'sale') {
+            const hiddenInput = input.parentElement.querySelector('.position-product');
+            const suggestionsDiv = input.parentElement.querySelector('.product-suggestions');
+            
+            input.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                
+                if (query.length < 2) {
+                    suggestionsDiv.style.display = 'none';
+                    return;
+                }
+                
+                const filtered = currentProducts.filter(product =>
+                    product.name.toLowerCase().includes(query) ||
+                    (product.code && product.code.toLowerCase().includes(query)) ||
+                    (product.article && product.article.toLowerCase().includes(query))
+                );
+                
+                if (filtered.length > 0) {
+                    suggestionsDiv.innerHTML = filtered.slice(0, 10).map(product => {
+                        // Используем currentStock в первую очередь
+                        let stock = product.currentStock || 0;
+                        
+                        const stockColor = stock > 0 ? '#28a745' : '#dc3545';
+                        const stockText = stock > 0 ? `${stock} шт` : 'Нет в наличии';
+                        
+                        return `<div class="suggestion-item" data-href="${product.meta.href}" data-sale-price="${product.salePrices ? product.salePrices[0]?.value || 0 : 0}" data-buy-price="${product.buyPrice?.value || 0}" data-stock="${stock}">
+                            <strong>${product.name}</strong><br>
+                            <small>Код: ${product.code || 'Нет'} | Артикул: ${product.article || 'Нет'}</small><br>
+                            <small style="color: ${stockColor}; font-weight: bold;">Остаток: ${stockText}</small>
+                        </div>`;
+                    }).join('');
+                    suggestionsDiv.style.display = 'block';
+                } else {
+                    suggestionsDiv.style.display = 'none';
+                }
+            });
+            
+            // Обработка клика по предложению
+            input.parentElement.addEventListener('click', function(e) {
+                if (e.target.closest('.suggestion-item')) {
+                    const item = e.target.closest('.suggestion-item');
+                    const href = item.getAttribute('data-href');
+                    const salePrice = item.getAttribute('data-sale-price') || 0;
+                    const buyPrice = item.getAttribute('data-buy-price') || 0;
+                    const stock = parseInt(item.getAttribute('data-stock')) || 0;
+                    const name = item.querySelector('strong').textContent;
+                    
+                    input.value = name;
+                    hiddenInput.value = href;
+                    suggestionsDiv.style.display = 'none';
+                    
+                    // Обновляем цены
+                    const positionRow = input.closest('.position-row');
+                    const priceInput = positionRow.querySelector('.position-price');
+                    const priceHint = positionRow.querySelector('.purchase-price-hint, .sale-price-hint');
+                    
+                    if (formType === 'sale') {
+                        priceInput.value = (salePrice / 100).toFixed(2);
+                        if (priceHint) {
+                            priceHint.textContent = `Цена закупки: ${(buyPrice / 100).toFixed(2)} руб.`;
+                        }
+                    } else {
+                        priceInput.value = (buyPrice / 100).toFixed(2);
+                        if (priceHint) {
+                            priceHint.textContent = `Цена продажи: ${(salePrice / 100).toFixed(2)} руб.`;
+                        }
+                    }
+                    
+                    // Показываем остаток рядом с названием товара
+                    let stockDisplay = positionRow.querySelector('.stock-display');
+                    if (!stockDisplay) {
+                        stockDisplay = document.createElement('small');
+                        stockDisplay.className = 'stock-display';
+                        stockDisplay.style.marginLeft = '10px';
+                        input.parentNode.appendChild(stockDisplay);
+                    }
+                    
+                    const stockColor = stock > 0 ? '#28a745' : '#dc3545';
+                    const stockText = stock > 0 ? `${stock} шт` : 'Нет в наличии';
+                    stockDisplay.innerHTML = `<span style="color: ${stockColor}; font-weight: bold;">Остаток: ${stockText}</span>`;
+                    
+                    console.log('Выбран товар:', name, 'остаток:', stock); // Для отладки
+                }
+            });
+            
+            // Скрытие предложений при клике вне
+            document.addEventListener('click', function(e) {
+                if (!input.parentElement.contains(e.target)) {
+                    suggestionsDiv.style.display = 'none';
+                }
+            });
+        }
+
+        // Переключение видимости поля комментария для Telegram
+        function toggleTelegramComment() {
+            const checkbox = document.getElementById('notifyTelegram');
+            const commentGroup = document.getElementById('telegramCommentGroup');
+            
+            if (checkbox.checked) {
+                commentGroup.style.display = 'block';
+            } else {
+                commentGroup.style.display = 'none';
+                document.getElementById('telegramComment').value = '';
+            }
+        }
+
+        // Отправка уведомления в Telegram
+        async function sendTelegramNotification(saleData, positions, comment) {
+            try {
+                let message = '🚚 Новая отгрузка создана\n\n';
+                
+                // Добавляем товары
+                let totalAmount = 0;
+                positions.forEach((position, index) => {
+                    const product = currentProducts.find(p => p.meta.href === position.assortment.meta.href);
+                    const productName = product ? product.name : 'Товар';
+                    const price = position.price / 100;
+                    const amount = position.quantity * price;
+                    totalAmount += amount;
+                    
+                    message += `${index + 1}. ${productName}\n`;
+                    message += `   Количество: ${position.quantity} шт\n`;
+                    message += `   Цена: ${price.toFixed(2)} руб\n`;
+                    message += `   Сумма: ${amount.toFixed(2)} руб\n\n`;
+                });
+                
+                message += `💰 Общая сумма: ${totalAmount.toFixed(2)} руб`;
+                
+                // Добавляем комментарий если есть
+                if (comment && comment.trim()) {
+                    message += `\n\n💬 Комментарий:\n${comment.trim()}`;
+                }
+                
+                // Заменяем \n на реальные переносы строк для Telegram
+                message = message.replace(/\\n/g, '\n');
+                
+                const response = await fetch('/api/telegram/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+                
+                if (!response.ok) {
+                    console.error('Ошибка отправки уведомления в Telegram');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка отправки уведомления в Telegram:', error);
+            }
+        }
+
+        // Добавление новой позиции товара в отгрузку
+        function addPosition() {
+            const positionsContainer = document.getElementById('salePositions');
+            const newPosition = document.createElement('div');
+            newPosition.className = 'position-row';
+            newPosition.innerHTML = `
+                <div class="row">
+                    <div class="col">
+                        <label>Товар:</label>
+                        <input type="text" class="position-product-search" placeholder="Начните вводить название товара..." required>
+                        <input type="hidden" class="position-product" required>
+                        <div class="product-suggestions" style="display: none;"></div>
+                    </div>
+                    <div class="col">
+                        <label>Количество:</label>
+                        <input type="number" class="position-quantity" min="1" value="1" required>
+                    </div>
+                    <div class="col">
+                        <label>Цена продажи (руб):</label>
+                        <input type="number" class="position-price" min="0" step="0.01" required>
+                        <small class="purchase-price-hint"></small>
+                    </div>
+                    <div class="col" style="flex: none;">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn btn-secondary" onclick="removePosition(this)">❌</button>
+                    </div>
                 </div>
             `;
             
-            // Сохраняем настройки
-            localStorage.setItem('moySkladSettings', JSON.stringify(settings));
+            positionsContainer.appendChild(newPosition);
+            
+            // Настраиваем поиск товаров для новой позиции
+            const productSearchInput = newPosition.querySelector('.position-product-search');
+            setupProductSearch(productSearchInput, 'sale');
         }
 
-        // Загрузка сохранённых настроек
+        // Удаление позиции товара из отгрузки
+        function removePosition(button) {
+            const positionsContainer = document.getElementById('salePositions');
+            if (positionsContainer.children.length > 1) {
+                button.closest('.position-row').remove();
+            } else {
+                alert('Должна быть хотя бы одна позиция товара');
+            }
+        }
+
+        // Добавление новой позиции товара в приёмку
+        function addPurchasePosition() {
+            const positionsContainer = document.getElementById('purchasePositions');
+            const newPosition = document.createElement('div');
+            newPosition.className = 'position-row';
+            newPosition.innerHTML = `
+                <div class="row">
+                    <div class="col">
+                        <label>Товар:</label>
+                        <input type="text" class="position-product-search" placeholder="Начните вводить название товара..." required>
+                        <input type="hidden" class="position-product" required>
+                        <div class="product-suggestions" style="display: none;"></div>
+                    </div>
+                    <div class="col">
+                        <label>Количество:</label>
+                        <input type="number" class="position-quantity" min="1" value="1" required>
+                    </div>
+                    <div class="col">
+                        <label>Цена закупки (руб):</label>
+                        <input type="number" class="position-price" min="0" step="0.01" required>
+                        <small class="sale-price-hint"></small>
+                    </div>
+                    <div class="col" style="flex: none;">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn btn-secondary" onclick="removePurchasePosition(this)">❌</button>
+                    </div>
+                </div>
+            `;
+            
+            positionsContainer.appendChild(newPosition);
+            
+            // Настраиваем поиск товаров для новой позиции
+            const productSearchInput = newPosition.querySelector('.position-product-search');
+            setupProductSearch(productSearchInput, 'purchase');
+        }
+
+        // Удаление позиции товара из приёмки
+        function removePurchasePosition(button) {
+            const positionsContainer = document.getElementById('purchasePositions');
+            if (positionsContainer.children.length > 1) {
+                button.closest('.position-row').remove();
+            } else {
+                alert('Должна быть хотя бы одна позиция товара');
+            }
+        }
+
+        // Создание отгрузки
+        document.getElementById('saleForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const status = document.getElementById('saleStatus');
+            status.innerHTML = '<div class="status">Создание отгрузки...</div>';
+            
+            try {
+                // Собираем позиции из формы
+                const positions = [];
+                const positionRows = document.querySelectorAll('#salePositions .position-row');
+                
+                for (const row of positionRows) {
+                    const product = row.querySelector('.position-product').value;
+                    const quantity = parseInt(row.querySelector('.position-quantity').value);
+                    const price = Math.round(parseFloat(row.querySelector('.position-price').value) * 100); // Преобразуем в копейки
+                    
+                    if (!product || !quantity || isNaN(price)) {
+                        throw new Error('Заполните все поля для всех товаров');
+                    }
+                    
+                    positions.push({
+                        assortment: {
+                            meta: {
+                                href: product,
+                                type: "product",
+                                mediaType: "application/json"
+                            }
+                        },
+                        quantity: quantity,
+                        price: price
+                    });
+                }
+                
+                const saleData = {
+                    organization: {
+                        meta: {
+                            href: document.getElementById('saleOrganization').value,
+                            type: "organization",
+                            mediaType: "application/json"
+                        }
+                    },
+                    store: {
+                        meta: {
+                            href: document.getElementById('saleStore').value,
+                            type: "store",
+                            mediaType: "application/json"
+                        }
+                    },
+                    agent: {
+                        meta: {
+                            href: document.getElementById('saleCounterparty').value,
+                            type: "counterparty",
+                            mediaType: "application/json"
+                        }
+                    },
+                    positions: positions
+                };
+                
+                const result = await apiRequest('/entity/demand', {
+                    method: 'POST',
+                    body: JSON.stringify(saleData)
+                });
+                
+                // Отправляем уведомление в Telegram если включено
+                const notifyTelegram = document.getElementById('notifyTelegram').checked;
+                if (notifyTelegram) {
+                    const comment = document.getElementById('telegramComment').value;
+                    await sendTelegramNotification(saleData, positions, comment);
+                }
+                
+                status.innerHTML = `<div class="status success">✅ Отгрузка успешно создана!<br>Номер: ${result.name || 'б/н'}${notifyTelegram ? '<br>📢 Уведомление отправлено в Telegram' : ''}</div>`;
+                document.getElementById('saleForm').reset();
+                
+                // Сбрасываем позиции до одной
+                const positionsContainer = document.getElementById('salePositions');
+                const firstPosition = positionsContainer.querySelector('.position-row');
+                positionsContainer.innerHTML = '';
+                positionsContainer.appendChild(firstPosition);
+                
+                // Очищаем поля первой позиции
+                firstPosition.querySelector('.position-product-search').value = '';
+                firstPosition.querySelector('.position-product').value = '';
+                firstPosition.querySelector('.position-quantity').value = '1';
+                firstPosition.querySelector('.position-price').value = '';
+                const priceHint = firstPosition.querySelector('.purchase-price-hint');
+                if (priceHint) priceHint.textContent = '';
+                const stockDisplay = firstPosition.querySelector('.stock-display');
+                if (stockDisplay) stockDisplay.remove();
+                
+                // Сбрасываем Telegram уведомления
+                document.getElementById('notifyTelegram').checked = false;
+                document.getElementById('telegramCommentGroup').style.display = 'none';
+                document.getElementById('telegramComment').value = '';
+                
+                fillSelects();
+                
+            } catch (error) {
+                status.innerHTML = `<div class="status error">❌ Ошибка создания отгрузки: ${error.message}</div>`;
+            }
+        });
+
+        // Создание приёмки
+        document.getElementById('purchaseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const status = document.getElementById('purchaseStatus');
+            status.innerHTML = '<div class="status">Создание приёмки...</div>';
+            
+            try {
+                // Собираем позиции из формы
+                const positions = [];
+                const positionRows = document.querySelectorAll('#purchasePositions .position-row');
+                
+                for (const row of positionRows) {
+                    const product = row.querySelector('.position-product').value;
+                    const quantity = parseInt(row.querySelector('.position-quantity').value);
+                    const price = Math.round(parseFloat(row.querySelector('.position-price').value) * 100); // Преобразуем в копейки
+                    
+                    if (!product || !quantity || isNaN(price)) {
+                        throw new Error('Заполните все поля для всех товаров');
+                    }
+                    
+                    positions.push({
+                        assortment: {
+                            meta: {
+                                href: product,
+                                type: "product",
+                                mediaType: "application/json"
+                            }
+                        },
+                        quantity: quantity,
+                        price: price
+                    });
+                }
+                
+                const purchaseData = {
+                    organization: {
+                        meta: {
+                            href: document.getElementById('purchaseOrganization').value,
+                            type: "organization",
+                            mediaType: "application/json"
+                        }
+                    },
+                    store: {
+                        meta: {
+                            href: document.getElementById('purchaseStore').value,
+                            type: "store",
+                            mediaType: "application/json"
+                        }
+                    },
+                    agent: {
+                        meta: {
+                            href: document.getElementById('purchaseCounterparty').value,
+                            type: "counterparty",
+                            mediaType: "application/json"
+                        }
+                    },
+                    positions: positions
+                };
+                
+                const result = await apiRequest('/entity/supply', {
+                    method: 'POST',
+                    body: JSON.stringify(purchaseData)
+                });
+                
+                status.innerHTML = `<div class="status success">✅ Приёмка успешно создана!<br>Номер: ${result.name || 'б/н'}</div>`;
+                document.getElementById('purchaseForm').reset();
+                
+                // Сбрасываем позиции до одной
+                const positionsContainer = document.getElementById('purchasePositions');
+                const firstPosition = positionsContainer.querySelector('.position-row');
+                positionsContainer.innerHTML = '';
+                positionsContainer.appendChild(firstPosition);
+                fillSelects();
+                
+            } catch (error) {
+                status.innerHTML = `<div class="status error">❌ Ошибка создания приёмки: ${error.message}</div>`;
+            }
+        });
+
+        // Загрузка сохранённых настроек при старте
         window.onload = function() {
             const saved = localStorage.getItem('moySkladSettings');
             if (saved) {
-                const settings = JSON.parse(saved);
-                document.getElementById('apiUrl').value = settings.apiUrl || '';
+                settings = JSON.parse(saved);
                 document.getElementById('username').value = settings.username || '';
                 document.getElementById('password').value = settings.password || '';
             }
