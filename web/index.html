@@ -212,19 +212,33 @@
         
         .product-suggestions {
             position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
             background: white;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-top: none;
             max-height: 200px;
             overflow-y: auto;
             z-index: 1000;
-            width: calc(100% - 2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 8px 8px;
+            
+            /* Улучшения для мобильных устройств */
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
         }
         
         .suggestion-item {
-            padding: 10px;
+            padding: 12px 15px;
             cursor: pointer;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            line-height: 1.4;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .suggestion-item:hover {
@@ -233,6 +247,77 @@
         
         .suggestion-item:last-child {
             border-bottom: none;
+        }
+        
+        /* Стили для поиска товаров */
+        .product-search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 8px 8px;
+            
+            /* Улучшения для мобильных устройств */
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+        
+        .product-search-suggestion {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            line-height: 1.4;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .product-search-suggestion:hover,
+        .product-search-suggestion:focus {
+            background-color: #f8f9fa;
+        }
+        
+        .product-search-suggestion:last-child {
+            border-bottom: none;
+        }
+        
+        .search-container {
+            position: relative;
+            width: 100%;
+            z-index: 1000;
+        }
+        
+        .price-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        /* Мобильные стили */
+        @media (max-width: 768px) {
+            .product-search-suggestions {
+                max-height: 250px;
+                font-size: 16px;
+            }
+            
+            .product-search-suggestion {
+                padding: 15px;
+                min-height: 70px;
+            }
+            
+            .search-container input {
+                font-size: 16px;
+                padding: 12px;
+            }
         }
     </style>
 </head>
@@ -376,7 +461,7 @@
                     <div id="salePositions">
                         <div class="position-row">
                             <div class="row">
-                                <div class="col">
+                                <div class="col search-container">
                                     <label>Товар:</label>
                                     <input type="text" class="position-product-search" placeholder="Начните вводить название товара..." required>
                                     <input type="hidden" class="position-product" required>
@@ -454,7 +539,7 @@
                     <div id="purchasePositions">
                         <div class="position-row">
                             <div class="row">
-                                <div class="col">
+                                <div class="col search-container">
                                     <label>Товар:</label>
                                     <input type="text" class="position-product-search" placeholder="Начните вводить название товара..." required>
                                     <input type="hidden" class="position-product" required>
@@ -934,7 +1019,7 @@
             input.addEventListener('input', function() {
                 const query = this.value.toLowerCase();
                 
-                if (query.length < 2) {
+                if (query.length < 1) {
                     suggestionsDiv.style.display = 'none';
                     return;
                 }
@@ -1013,6 +1098,24 @@
                 }
             });
             
+            // Touch-события для мобильных устройств
+            input.parentElement.addEventListener('touchstart', function(e) {
+                if (e.target.closest('.suggestion-item')) {
+                    e.preventDefault();
+                    e.target.closest('.suggestion-item').style.backgroundColor = '#f8f9fa';
+                }
+            });
+            
+            input.parentElement.addEventListener('touchend', function(e) {
+                if (e.target.closest('.suggestion-item')) {
+                    e.preventDefault();
+                    const item = e.target.closest('.suggestion-item');
+                    item.style.backgroundColor = '';
+                    // Триггерим клик
+                    setTimeout(() => item.click(), 10);
+                }
+            });
+            
             // Скрытие предложений при клике вне
             document.addEventListener('click', function(e) {
                 if (!input.parentElement.contains(e.target)) {
@@ -1088,7 +1191,7 @@
             newPosition.className = 'position-row';
             newPosition.innerHTML = `
                 <div class="row">
-                    <div class="col">
+                    <div class="col search-container">
                         <label>Товар:</label>
                         <input type="text" class="position-product-search" placeholder="Начните вводить название товара..." required>
                         <input type="hidden" class="position-product" required>
@@ -1134,7 +1237,7 @@
             newPosition.className = 'position-row';
             newPosition.innerHTML = `
                 <div class="row">
-                    <div class="col">
+                    <div class="col search-container">
                         <label>Товар:</label>
                         <input type="text" class="position-product-search" placeholder="Начните вводить название товара..." required>
                         <input type="hidden" class="position-product" required>
